@@ -3,13 +3,13 @@ import 'package:api_pro/model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-class home extends StatefulWidget {
-  const home({super.key});
+class home_p extends StatefulWidget {
+  const home_p({super.key});
   @override
-  State<home> createState() => _homeState();
+  State<home_p> createState() => _home_pState();
 }
-class _homeState extends State<home> {
-List<dynamic> users = [];
+class _home_pState extends State<home_p> {
+  List<user>users =[];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,15 +23,15 @@ List<dynamic> users = [];
             ),
 
           ),
-        title: Text("User Data",style: TextStyle(fontSize: 40,fontWeight: FontWeight.bold,),),
+          title: Text("User Data",style: TextStyle(fontSize: 40,fontWeight: FontWeight.bold,),),
           centerTitle: true,
         ),
       ),
       body: Stack(
         children: [
           Container(
-          width:MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+            width:MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
             child: Column(
               children: [
                 Container(
@@ -39,42 +39,44 @@ List<dynamic> users = [];
                   height: 800,
                   child: ListView.builder(itemCount: users.length,itemBuilder: (context,index){
                     final user = users[index];
-                    final name = user['name']['first'];
-                    final email = user['email'];
-                    final img = user['picture']['thumbnail'];
+                    final email = user.email;
                     return ListTile(
                       leading: CircleAvatar(
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
-                            child: Image.network(img)),
-                      ),
-                      title: Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
-                      subtitle: Text(email),
+                      ),),
+                      title: Text(email,style: TextStyle(fontWeight: FontWeight.bold),),
+                      subtitle: Text(user.name.first),
                     );
                   }),
                 )
               ],
             ),
-        ),
+          ),
           Positioned(
             bottom: 5,
             right: 5,
             child:
             FloatingActionButton(onPressed: fetchuser,child: Icon(Icons.add,),backgroundColor: Colors.lightGreen ,),
           ),
-          ],
+        ],
       ),
     );
   }
   void fetchuser() async{
     print("data fetched...");
-   const url = "https://randomuser.me/api/?results=25";
+    const url = "https://randomuser.me/api/?results=25";
     final uri = Uri.parse(url);
-  final res = await http.get(uri);
-  final body = res.body;
-  final json = jsonDecode(body);
-   setState(() {
-        users = json['results'];
-   });
+    final res = await http.get(uri);
+    final body = res.body;
+    final json = jsonDecode(body);
+    final results = json['results'] as List<dynamic>;
+    final transformed = results.map((e){
+      final name = username(title: e['name']['title'], first: e['name']['first'], last: e['name']['last']);
+      return user(email: e['email'], gender: e['gender'], phone: e['phone'], cell: e['cell'], nat: e['nat'],name:name,);
+    }).toList();
+    setState(() {
+      users = transformed;
+    });
   }
 }
